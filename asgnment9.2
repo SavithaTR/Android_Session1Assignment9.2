@@ -1,0 +1,106 @@
+#1.
+Ans: dim(UCBAdmissions)
+ [1] 2 2 6
+dimnames(UCBAdmissions)
+ $Admit
+ [1] "Admitted" "Rejected"
+ $Gender
+[1] "Male"   "Female"
+ $Dept
+ [1] "A" "B" "C" "D" "E" "F"
+str(UCBAdmissions)
+ table [1:2, 1:2, 1:6] 512 313 89 19 353 207 17 8 120 205 ...
+ - attr(*, "dimnames")=List of 3
+  ..$ Admit : chr [1:2] "Admitted" "Rejected"
+  ..$ Gender: chr [1:2] "Male" "Female"
+  ..$ Dept  : chr [1:6] "A" "B" "C" "D" ...
+UCB.GA <- margin.table(UCBAdmissions, c(1,2))
+UCB.GA
+           Gender
+ Admit      Male Female
+ Admitted 1198    557
+univ <- apply(UCBAdmissions, c(1,2), sum)
+univ
+        Gender
+ Admit      Male Female
+   Admitted 1198    557
+   Rejected 1493   1278
+prop.table(univ, 2)
+           Gender
+ Admit           Male    Female
+   Admitted 0.4451877 0.3035422
+   Rejected 0.5548123 0.6964578  Rejected 1493   1278
+admit <- apply(UCBAdmissions, c(2,3,1), sum)
+admit
+ , , Admit = Admitted
+ 
+         Dept
+ Gender     A   B   C   D  E  F
+   Male   512 353 120 138 53 22
+   Female  89  17 202 131 94 24
+ 
+ , , Admit = Rejected
+ 
+         Dept
+ Gender     A   B   C   D   E   F
+   Male   313 207 205 279 138 351
+   Female  19   8 391 244 299 317
+
+
+#2.
+Ans: filePath <- file.path(path, 'Automobile price data _Raw_.csv')
+    auto.price <- read.csv(filePath, header = TRUE, 
+                           stringsAsFactors = TRUE, na.strings = "?")
+    
+    ## Coerce some character columns to numeric
+    numcols <- c('price', 'bore', 'stroke', 'horsepower', 'peak.rpm',
+                 'highway.mpg', 'city.mpg', 'compression.ratio',
+                 'engine.size', 'curb.weight', 'height', 'width',
+                 'length', 'wheel.base', 'normalized.losses',
+                 'symboling')
+    auto.price[, numcols] <- lapply(auto.price[, numcols], as.numeric)
+    
+    ## Clean and tidy num.of.doors
+    auto.price$num.of.doors <- as.character(auto.price$num.of.doors)
+    auto.price$num.of.doors[auto.price$num.of.doors == 'four'] <- 4
+    auto.price$num.of.doors[auto.price$num.of.doors == 'two'] <- 2
+    auto.price$num.of.doors <- as.integer(auto.price$num.of.doors)
+    
+    ## Clean and tidy num.of.cylinders
+    auto.price$num.of.cylinders <- as.character(auto.price$num.of.cylinders)
+    auto.price$num.of.cylinders[auto.price$num.of.cylinders == 'eight'] <- 8
+    auto.price$num.of.cylinders[auto.price$num.of.cylinders == 'five'] <- 5
+    auto.price$num.of.cylinders[auto.price$num.of.cylinders == 'four'] <- 4
+    auto.price$num.of.cylinders[auto.price$num.of.cylinders == 'six'] <- 6
+    auto.price$num.of.cylinders[auto.price$num.of.cylinders == 'three'] <- 3
+    auto.price$num.of.cylinders[auto.price$num.of.cylinders == 'twelve'] <- 12
+    auto.price$num.of.cylinders[auto.price$num.of.cylinders == 'two'] <- 2
+    auto.price$num.of.cylinders <- as.integer(auto.price$num.of.cylinders)
+    
+    auto.price
+}
+
+# Outputs the Q-Q Plot of Price with a function applied to it
+qqPlotOfPrice <- function(price.function=I){
+  library(ggplot2)
+  scaled_price <- as.data.frame(scale(price.function(Auto.Price$price))) # Scales price and applies function
+  names(scaled_price) <- 'price'
+  if(!identical(price.function, I)){ # Defines one of the words of the main title of the plot
+    if(identical(price.function, log)){
+      title_price <- 'Log of Price'
+    }
+    else if(identical(price.function, sqrt)){
+      title_price <- 'Sqrt of Price'
+    }
+    else {
+      title_price <- 'Transformation of Price'
+    }
+  }
+  else {
+    title_price <- 'Price'
+  }
+  # Plots the Q-Q Plot
+  ggplot(scaled_price, aes(sample=price)) + stat_qq(na.rm = TRUE) + 
+    geom_abline(aes(slope=1,intercept=0), color="red", lty="dashed") + 
+    labs(title=paste0("Q-Q Plot of the distribution of ", title_price, " in Auto Data"), y="Sample Quantiles", x="Theoretical Quantiles")
+}
